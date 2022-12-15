@@ -6,6 +6,8 @@
         <RootNamespace>Partsbnd_Rename_Tool</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyVersion>1.1</AssemblyVersion>
+        <FileVersion>1.1</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
