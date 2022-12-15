@@ -18,7 +18,6 @@ public class Program {
             ShowUsage("No file given as argument. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
         }
 
-
         if (BND4.IsRead(bndPath, out BND4 bnd4)) {
             if (!File.Exists($"{bndPath}.bak")) File.Copy(bndPath, $"{bndPath}.bak");
 
