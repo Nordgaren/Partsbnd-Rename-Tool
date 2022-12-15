@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Partsbnd-Rename-Tool", "Partsbnd-Rename-Tool\Partsbnd-Rename-Tool.csproj", "{6E365216-17F7-4E57-9DB1-38AEFDCC5CBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoulsFormats", "SoulsFormats\SoulsFormats\SoulsFormats.csproj", "{5D30D6BC-68B3-4B1C-A97F-110C777BAE6A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E365216-17F7-4E57-9DB1-38AEFDCC5CBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E365216-17F7-4E57-9DB1-38AEFDCC5CBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E365216-17F7-4E57-9DB1-38AEFDCC5CBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E365216-17F7-4E57-9DB1-38AEFDCC5CBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D30D6BC-68B3-4B1C-A97F-110C777BAE6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D30D6BC-68B3-4B1C-A97F-110C777BAE6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D30D6BC-68B3-4B1C-A97F-110C777BAE6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D30D6BC-68B3-4B1C-A97F-110C777BAE6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
