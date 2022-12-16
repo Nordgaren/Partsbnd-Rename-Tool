@@ -1,7 +1,13 @@
 ﻿using SoulsFormats;
 using System.Text.RegularExpressions;
-
 namespace Partsbnd_Rename_Tool;
+
+public class PartsInfo {
+    public string NewName => $"{NewSlot}_{NewGender}_{NewID}";
+    public string NewSlot { get; init; }
+    public string NewGender { get; init;  }
+    public string NewID { get; init; }
+}
 
 public class Program {
     private static Regex _fileNameRegex = new Regex("(?<slot>[a-zA-Z]+)_(?<gender>[a-zA-Z])_(?<id>[0-9]+)(.*)\\.(?<ext>[a-zA-Z]+)", RegexOptions.IgnoreCase);
@@ -44,7 +50,7 @@ public class Program {
             throw;
         }
 
-        ShowUsage("File does not exist. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
+        ShowUsage("File is not a partsbnd. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
     }
 
     private static void PatchBND(string filename, IBinder bnd) {
@@ -53,17 +59,22 @@ public class Program {
         string slot = match.Groups["slot"].Value;
         string gender = match.Groups["gender"].Value;
         string newId = match.Groups["id"].Value;
-        string newName = $"{slot}_{gender}_{newId}";
 
-        Dictionary<string, string> textureReplacements = PatchTPF(bnd, newId, newName);
-        PatchFLVER(bnd, textureReplacements);
+        PartsInfo partsInfo = new() {
+            NewSlot = slot,
+            NewGender = gender,
+            NewID = newId
+        };
+
+        Dictionary<string, string> textureReplacements = PatchTPF(bnd, partsInfo);
+        PatchBNDFLVER(bnd, textureReplacements);
     }
-    private static void PatchFLVER(IBinder bnd, Dictionary<string, string> textureReplacements) {
+    private static void PatchBNDFLVER(IBinder bnd, Dictionary<string, string> textureReplacements) {
 
         foreach (BinderFile file in bnd.Files) {
             if (!FLVER2.IsRead(file.Bytes, out FLVER2 flver)) continue;
             foreach (FLVER2.Material material in flver.Materials) {
-                // I don'think this is necessary
+                // I don't think this is necessary
                 // Match originalMatMatch = _texNameRegex.Match(material.MTD);
                 // if (originalMatMatch.Success) {
                 //     string originalId = originalMatMatch.Groups["id"].Value;
@@ -81,26 +92,29 @@ public class Program {
             file.Bytes = flver.Write();
         }
     }
-    private static Dictionary<string, string> PatchTPF(IBinder bnd, string newId, string newName) {
+    private static Dictionary<string, string> PatchTPF(IBinder bnd, PartsInfo partsInfo) {
 
         Dictionary<string, string> textureReplacements = new();
         foreach (BinderFile file in bnd.Files) {
             Match originalFileMatch = _fileNameRegex.Match(file.Name);
-            if (!originalFileMatch.Success) throw new Exception("No match found in original filename. Cannot patch BND");
+            if (!originalFileMatch.Success) throw new InvalidPartsFileNameException($"No match found in original filename for:\n{file.Name}.\nCannot patch BND");
 
             string originalId = originalFileMatch.Groups["id"].Value;
-            file.Name = file.Name.Replace(originalId, newId);
+            file.Name = file.Name.Replace(originalId, partsInfo.NewID);
 
             if (TPF.IsRead(file.Bytes, out TPF tpf)) {
                 int count = 0;
                 foreach (TPF.Texture tex in tpf.Textures) {
-                    Match textureMatch = _texNameRegex.Match(tex.Name);
                     string originalTexName = Path.GetFileNameWithoutExtension(tex.Name);
+                    Match textureMatch = _texNameRegex.Match(tex.Name);
                     if (textureMatch.Success) {
-                        tex.Name = tex.Name.Replace(textureMatch.Groups["id"].Value, newId);
+                        string oldSlot = textureMatch.Groups["slot"].Value;
+                        string oldGender = textureMatch.Groups["gender"].Value;
+                        tex.Name = tex.Name.Replace(textureMatch.Groups["id"].Value, partsInfo.NewID)
+                            .Replace($"{oldSlot}_{oldGender}_", $"{partsInfo.NewSlot}_{partsInfo.NewGender}_");
                     }
                     else {
-                        tex.Name = $"{newName}_{count++}";
+                        tex.Name = $"{partsInfo.NewName}_{count++}";
                     }
                     textureReplacements[originalTexName] = Path.GetFileNameWithoutExtension(tex.Name);
                 }
@@ -123,4 +137,8 @@ public class Program {
         Console.WriteLine(message);
         Environment.Exit(1);
     }
+}
+
+public class InvalidPartsFileNameException : Exception {
+    public InvalidPartsFileNameException(string message) : base(message) { }
 }
