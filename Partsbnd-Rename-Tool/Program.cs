@@ -14,43 +14,40 @@ public class Program {
     private static Regex _texNameRegex = new Regex("(?<slot>[a-zA-Z]+)_(?<gender>[a-zA-Z])_(?<id>[0-9]+)*", RegexOptions.IgnoreCase);
     static void Main(string[] args) {
 
-        string bndPath = string.Empty;
         try {
-            bndPath = args[0];
-            if (!File.Exists(bndPath))
-                ShowUsage("File does not exist. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
-        }
-        catch (Exception e) {
-            ShowUsage("No file given as argument. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
-        }
-
-        try {
-            if (BND4.IsRead(bndPath, out BND4 bnd4)) {
-                if (!File.Exists($"{bndPath}.bak")) File.Copy(bndPath, $"{bndPath}.bak");
-
-                string filename = Path.GetFileNameWithoutExtension(bndPath);
-
-                Console.WriteLine($"Attempting to patch BND4 {filename}");
-                PatchBND(filename, bnd4);
-                bnd4.Write(bndPath);
-                ExitSuccessfully("Patching Complete!");
-            }
-            if (BND3.IsRead(bndPath, out BND3 bnd3)) {
-                if (!File.Exists($"{bndPath}.bak")) File.Copy(bndPath, $"{bndPath}.bak");
-
-                string filename = Path.GetFileNameWithoutExtension(bndPath);
-                Console.WriteLine($"Attempting to patch BND3 {filename}");
-                PatchBND(filename, bnd4);
-                bnd3.Write(bndPath);
-                ExitSuccessfully("Patching Complete!");
-            }
+            BeginPatch(args);
         }
         catch (Exception e) {
             ShowError(e);
             throw;
         }
 
-        ShowUsage("File is not a partsbnd. Please drag and drop a partsbnd file on this exe, to rename the parts files inside.");
+        ShowUsage("File is not a partsbnd.");
+    }
+    private static void BeginPatch(string[] args) {
+
+        string bndPath = args[0];
+        if (!File.Exists(bndPath))
+            ShowUsage("File does not exist.");
+        if (BND4.IsRead(bndPath, out BND4 bnd4)) {
+            if (!File.Exists($"{bndPath}.bak")) File.Copy(bndPath, $"{bndPath}.bak");
+
+            string filename = Path.GetFileNameWithoutExtension(bndPath);
+
+            Console.WriteLine($"Attempting to patch BND4 {filename}");
+            PatchBND(filename, bnd4);
+            bnd4.Write(bndPath);
+            ExitSuccessfully("Patching Complete!");
+        }
+        if (BND3.IsRead(bndPath, out BND3 bnd3)) {
+            if (!File.Exists($"{bndPath}.bak")) File.Copy(bndPath, $"{bndPath}.bak");
+
+            string filename = Path.GetFileNameWithoutExtension(bndPath);
+            Console.WriteLine($"Attempting to patch BND3 {filename}");
+            PatchBND(filename, bnd4);
+            bnd3.Write(bndPath);
+            ExitSuccessfully("Patching Complete!");
+        }
     }
 
     private static void PatchBND(string filename, IBinder bnd) {
@@ -100,7 +97,10 @@ public class Program {
             if (!originalFileMatch.Success) throw new InvalidPartsFileNameException($"No match found in original filename for:\n{file.Name}.\nCannot patch BND");
 
             string originalId = originalFileMatch.Groups["id"].Value;
-            file.Name = file.Name.Replace(originalId, partsInfo.NewID);
+            string originalSlot = originalFileMatch.Groups["slot"].Value;
+            string originalGender = originalFileMatch.Groups["gender"].Value;
+            file.Name = file.Name.Replace(originalId, partsInfo.NewID)
+                .Replace($"{originalSlot}_{originalGender}_", $"{partsInfo.NewSlot}_{partsInfo.NewGender}_");
 
             if (TPF.IsRead(file.Bytes, out TPF tpf)) {
                 int count = 0;
